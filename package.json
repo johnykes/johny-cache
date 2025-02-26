@@ -1,16 +1,37 @@
 {
   "name": "johny-cache",
   "version": "1.0.2",
-  "main": "index.js",
   "scripts": {
     "test": "jest",
+    "build": "tsc",
     "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'"
   },
-  "keywords": [],
   "author": "johnykes",
-  "license": "ISC",
-  "description": "",
+  "description": "Easy distributed caching for Node.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:johnykes/johny-cache.git"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "cache",
+    "caching",
+    "redis",
+    "local-cache",
+    "remote-cache",
+    "easy-cache",
+    "easy-caching",
+    "distributed-cache",
+    "distributed-caching"
+  ],
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.5",
