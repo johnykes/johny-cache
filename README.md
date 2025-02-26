@@ -4,9 +4,11 @@
 
 johny-cache is a lightweight, framework‐agnostic TypeScript library for caching and distributed locking. It combines **local in‐memory** caching and **Redis‐based remote** caching in one **easy‐to‐use service**. Simply provide a Redis connection string and let johny-cache handle the rest—no need to manually juggle Redis clients, memory caches, or distributed locks.
 
+FYI - Some of the code is inspired from https://github.com/multiversx/mx-sdk-nestjs.
+
 ---
 
-## Motivation / Why this library exists
+## Motivation
 
 Caching can be deceptively complex. <br/>
 You might use both a Redis cache and an in-memory (local) cache, but as soon as you scale out horizontally - running multiple app instances - your data can become inconsistent across each instance’s local cache and the shared Redis cache. <br/> Keeping them all synchronized can feel like a never-ending headache.
