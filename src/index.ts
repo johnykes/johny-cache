@@ -4,3 +4,4 @@ export * from './local-cache/local-cache.service';
 export * from './redis/redis-pub-sub.service';
 export * from './redis/redis-events';
 export * from './constants';
+export * from './cache-info-validation.service';

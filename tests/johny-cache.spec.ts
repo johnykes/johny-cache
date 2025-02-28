@@ -1,5 +1,9 @@
 import { JohnyCacheService } from '../src/johny-cache';
-import { CacheSetting, LockCacheSettings } from '../src/cache-settings';
+import {
+  CacheSetting,
+  LockCacheSettings,
+  LockerOptions,
+} from '../src/cache-settings';
 import { Lock } from 'redlock';
 import { Constants } from '../src/constants';
 
@@ -25,12 +29,13 @@ describe('JohnyCacheService', () => {
   });
 
   test('should set and get a cache value', async () => {
-    const cacheSettings: CacheSetting = {
-      key: 'test:key',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'key',
       localTtl: 5 * Constants.oneSecond(),
       remoteTtl: 10 * Constants.oneSecond(),
       refreshTtl: true,
-    };
+    });
     const value = { data: 'hello world' };
 
     await johnyCacheService.set(cacheSettings, value);
@@ -39,12 +44,13 @@ describe('JohnyCacheService', () => {
   });
 
   test('should delete a cache key', async () => {
-    const cacheSettings: CacheSetting = {
-      key: 'test:delete',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'delete',
       localTtl: 5 * Constants.oneSecond(),
       remoteTtl: 10 * Constants.oneSecond(),
       refreshTtl: false,
-    };
+    });
     const value = 'delete me';
 
     // Set value in cache.
@@ -59,12 +65,13 @@ describe('JohnyCacheService', () => {
   });
 
   test('should getOrSetCache correctly', async () => {
-    const cacheSettings: CacheSetting = {
-      key: 'test:getorset',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'getorset',
       localTtl: 5 * Constants.oneSecond(),
       remoteTtl: 10 * Constants.oneSecond(),
       refreshTtl: false,
-    };
+    });
 
     // First call should execute the promise as cache is empty.
     const firstResult = await johnyCacheService.getOrSetCache(
@@ -86,15 +93,16 @@ describe('JohnyCacheService', () => {
   });
 
   test('should acquire and release a lock', async () => {
-    const lockCacheSettings: LockCacheSettings = {
-      key: 'test:lock',
+    const lockCacheSettings = new LockCacheSettings({
+      prefix: 'test',
+      suffix: 'lock',
       remoteTtl: 2 * Constants.oneSecond(),
-      lockOptions: {
+      lockOptions: new LockerOptions({
         retryCount: 3,
         retryDelay: 50,
         retryJitter: 10,
-      },
-    };
+      }),
+    });
 
     const lock: Lock | null =
       await johnyCacheService.acquireLock(lockCacheSettings);
@@ -109,15 +117,16 @@ describe('JohnyCacheService', () => {
   });
 
   test('should expire a lock gracefully', async () => {
-    const lockCacheSettings: LockCacheSettings = {
-      key: 'test:lock-expire',
+    const lockCacheSettings = new LockCacheSettings({
+      prefix: 'test',
+      suffix: 'lock-expire',
       remoteTtl: Constants.oneSecond(),
-      lockOptions: {
+      lockOptions: new LockerOptions({
         retryCount: 3,
         retryDelay: 50,
         retryJitter: 10,
-      },
-    };
+      }),
+    });
 
     const lock = await johnyCacheService.acquireLock(lockCacheSettings);
     expect(lock).toBeDefined();
@@ -133,12 +142,12 @@ describe('JohnyCacheService', () => {
   });
 
   test('should expire in memory cache', async () => {
-    // Set remoteTtl to 0 so that the value is only stored in memory.
-    const cacheSettings: CacheSetting = {
-      key: 'test:expire-memory',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'expire-memory',
       localTtl: Constants.oneSecond(),
       refreshTtl: false,
-    };
+    });
     const value = { data: 'hello memory' };
 
     await johnyCacheService.set(cacheSettings, value);
@@ -152,11 +161,12 @@ describe('JohnyCacheService', () => {
   });
 
   test('should expire remote cache', async () => {
-    const cacheSettings: CacheSetting = {
-      key: 'test:expire-remote',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'expire-remote',
       remoteTtl: Constants.oneSecond(),
       refreshTtl: false,
-    };
+    });
     const value = { data: 'hello remote' };
 
     await johnyCacheService.set(cacheSettings, value);
@@ -170,10 +180,11 @@ describe('JohnyCacheService', () => {
   });
 
   test('multiple instances should work', async () => {
-    const cacheSettings: CacheSetting = {
-      key: 'test:multiple-instances',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'multiple-instances',
       remoteTtl: Constants.oneSecond(),
-    };
+    });
     const value = { data: 'hello invalidation' };
 
     await johnyCacheService.set(cacheSettings, value);
@@ -182,11 +193,12 @@ describe('JohnyCacheService', () => {
   });
 
   test('cache invalidation should work', async () => {
-    const cacheSettings: CacheSetting = {
-      key: 'test:invalidation',
+    const cacheSettings = new CacheSetting({
+      prefix: 'test',
+      suffix: 'invalidation',
       remoteTtl: 10 * Constants.oneSecond(),
       localTtl: 5 * Constants.oneSecond(),
-    };
+    });
     const value = { data: 'hello invalidation' };
 
     await johnyCacheService.set(cacheSettings, value);

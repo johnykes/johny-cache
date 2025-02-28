@@ -81,7 +81,7 @@ export class JohnyCacheService {
     if (cacheSettings.localTtl) {
       promises.push(
         this.memoryCache.setCacheValue(
-          cacheSettings.key,
+          cacheSettings.getKey(),
           value,
           cacheSettings.localTtl,
         ),
@@ -89,7 +89,11 @@ export class JohnyCacheService {
     }
     if (cacheSettings.remoteTtl) {
       promises.push(
-        this.redisCache.set(cacheSettings.key, value, cacheSettings.remoteTtl),
+        this.redisCache.set(
+          cacheSettings.getKey(),
+          value,
+          cacheSettings.remoteTtl,
+        ),
       );
     }
 
@@ -97,18 +101,20 @@ export class JohnyCacheService {
 
     if (cacheSettings.remoteTtl && cacheSettings.refreshTtl) {
       await this.sendRefreshRemoteKeysEvent(
-        [cacheSettings.key],
+        [cacheSettings.getKey()],
         cacheSettings.remoteTtl,
       );
     }
   }
 
   async get(cacheSettings: CacheSetting): Promise<any> {
-    const memoryValue = await this.memoryCache.getCacheValue(cacheSettings.key);
+    const memoryValue = await this.memoryCache.getCacheValue(
+      cacheSettings.getKey(),
+    );
     if (memoryValue !== undefined) {
       return memoryValue;
     }
-    const redisValue = await this.redisCache.get(cacheSettings.key);
+    const redisValue = await this.redisCache.get(cacheSettings.getKey());
     return redisValue === undefined ? null : redisValue;
   }
 
@@ -135,14 +141,14 @@ export class JohnyCacheService {
 
   async delete(cacheSettings: CacheSetting): Promise<void> {
     if (!cacheSettings.localTtl) {
-      await this.redisCache.delete(cacheSettings.key);
+      await this.redisCache.delete(cacheSettings.getKey());
       return;
     }
 
     await Promise.all([
-      this.memoryCache.deleteCacheKey(cacheSettings.key),
-      this.redisCache.delete(cacheSettings.key),
-      this.sendDeleteRemoteKeysEvent([cacheSettings.key]),
+      this.memoryCache.deleteCacheKey(cacheSettings.getKey()),
+      this.redisCache.delete(cacheSettings.getKey()),
+      this.sendDeleteRemoteKeysEvent([cacheSettings.getKey()]),
     ]);
   }
 
@@ -199,12 +205,12 @@ export class JohnyCacheService {
 
     try {
       return await redlockToUse.acquire(
-        [cacheSettings.key],
+        [cacheSettings.getKey()],
         cacheSettings.remoteTtl,
       );
     } catch (error) {
       this.logger.error(
-        `Failed to acquire lock for key: ${cacheSettings.key}`,
+        `Failed to acquire lock for key: ${cacheSettings.getKey()}`,
         error,
       );
       return null;

@@ -1,23 +1,38 @@
 export class CacheSetting {
-    key: string;
-    localTtl?: number;
-    remoteTtl?: number;
-    // pattern?: string;
-  
-    // refresh or not the TTL for .set() true by default
-    refreshTtl?: boolean = true;
-  
-    constructor(init?: Partial<CacheSetting>) {
-      Object.assign(this, init);
-    }
+  prefix: string;
+  suffix: string;
+
+  getKey(): string {
+    return `${this.prefix}_${this.suffix}`;
+  }
+
+  // ttl
+  localTtl?: number;
+  remoteTtl?: number;
+
+  // refresh or not the TTL for .set() true by default
+  refreshTtl?: boolean = true;
+
+  constructor(init?: Partial<CacheSetting>) {
+    Object.assign(this, init);
+  }
 }
 
-export interface LockerOptions {
-    retryCount?: number;
-    retryDelay?: number;
-    retryJitter?: number;
+export class LockerOptions {
+  retryCount?: number;
+  retryDelay?: number;
+  retryJitter?: number;
+
+  constructor(init?: Partial<LockerOptions>) {
+    Object.assign(this, init);
   }
-  
-export interface LockCacheSettings extends CacheSetting {
+}
+
+export class LockCacheSettings extends CacheSetting {
   lockOptions?: LockerOptions;
+
+  constructor(init?: Partial<LockCacheSettings>) {
+    super(init);
+    Object.assign(this, init);
+  }
 }
