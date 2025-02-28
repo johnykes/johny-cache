@@ -115,3 +115,23 @@ if (lock) {
   }
 }
 ```
+
+## Nestjs Module Sample
+
+```TS
+@Global()
+@Module({
+  imports: [CommonModule],
+  providers: [
+    {
+      provide: JohnyCacheService,
+      useFactory: (apiConfigService: ApiConfigService) =>
+        new JohnyCacheService(apiConfigService.getRedisUrl()),
+      inject: [ApiConfigService],
+    },
+    CacheInfoValidationService,
+  ],
+  exports: [JohnyCacheService],
+})
+export class CacheModule {}
+```
