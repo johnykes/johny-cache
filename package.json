@@ -1,11 +1,14 @@
 {
-  "name": "johny-cache",
-  "version": "1.0.5",
+  "name": "johnycash",
+  "version": "1.0.55",
   "scripts": {
     "test": "jest",
     "build": "tsc",
+    "clean": "rm -rf dist",
+    "clean-cache": "npm cache clean --force",
     "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
-    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'"
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "publish": "npm publish --access public"
   },
   "author": "johnykes",
   "description": "Easy distributed caching for Node.js",
