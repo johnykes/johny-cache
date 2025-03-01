@@ -203,7 +203,7 @@ export class JohnyCacheService {
     try {
       return await redlockToUse.acquire(
         [cacheSettings.getKey()],
-        cacheSettings.remoteTtl,
+        LockCacheSettings.getTtl(cacheSettings),
       );
     } catch (error) {
       return null;

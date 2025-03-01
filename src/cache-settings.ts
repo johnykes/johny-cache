@@ -31,6 +31,11 @@ export class LockerOptions {
 export class LockCacheSettings extends CacheSetting {
   lockOptions?: LockerOptions;
 
+  // for aquire lock TTl works differently for some reason
+  static getTtl(lockCacheSettings: LockCacheSettings): number {
+    return lockCacheSettings.remoteTtl ? lockCacheSettings.remoteTtl * 1000 : 0;
+  }
+
   constructor(init?: Partial<LockCacheSettings>) {
     super(init);
     Object.assign(this, init);

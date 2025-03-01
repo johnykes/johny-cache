@@ -136,3 +136,43 @@ if (lock) {
 })
 export class CacheModule {}
 ```
+
+## Unique cache settings prefix validtion
+
+```TS
+
+export class CacheInfo {
+  // User Data
+  static UserDataCacheSettings(
+    userIdOrEmail: string,
+    provider?: UserAuthProviders, // when searching by email, this is needed!
+  ): CacheSetting {
+    return new CacheSetting({
+      prefix: 'ud',
+      suffix: `${userIdOrEmail}` + (provider ? `_${provider}` : ''),
+      remoteTtl: Constants.oneHour(),
+      localTtl: 10 * Constants.oneMinute(),
+    });
+  }
+
+  static UserProfileDataCacheSettings(userId: string): CacheSetting {
+    return new CacheSetting({
+      prefix: `upd_${userId}`,
+      remoteTtl: Constants.oneHour(),
+      localTtl: 10 * Constants.oneMinute(),
+    });
+  }
+
+  // ...
+}
+
+export function validateUniqueKeys() {
+  const staticMethodNames = Object.getOwnPropertyNames(CacheInfo).filter(
+    (prop) => typeof CacheInfo[prop] === 'function' && prop !== 'constructor',
+  );
+  const staticMethodsArray = staticMethodNames.map(
+    (methodName) => CacheInfo[methodName],
+  );
+  new CacheInfoValidationService(staticMethodsArray);
+}
+```
