@@ -55,7 +55,8 @@ const cacheService = new JohnyCacheService(redisUrl);
 import { JohnyCacheService, CacheSetting, Constants } from 'johny-cache';
 
 const cacheSettings: CacheSetting = {
-  key: 'user:123', // unique key
+  prefix: 'user',  // unique prefix
+  suffix: '123',   // unique suffix
   localTtl: 10,    // seconds (in local cache/memory)
   remoteTtl: 300,  // seconds (remote/Redis)
 };
@@ -96,14 +97,14 @@ await cacheService.delete(cacheSettings);
 import { LockCacheSettings } from 'johny-cache';
 
 const lockSettings: LockCacheSettings = {
-  key: 'delete-inactive-users-cronjob-locker',
+  prefix: 'delete-inactive-users-cronjob-locker',
   remoteTtl: 5 * Constants.OneSecond()
   // optional locker settings
-  lockOptions: {
-    retryCount: 3,
-    retryDelay: 50,
-    retryJitter: 10,
-  },
+  // lockOptions: {
+  //   retryCount: 3,
+  //   retryDelay: 50,
+  //   retryJitter: 10,
+  // },
 };
 
 const lock = await cacheService.acquireLock(lockSettings);

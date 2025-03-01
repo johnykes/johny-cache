@@ -206,10 +206,6 @@ export class JohnyCacheService {
         cacheSettings.remoteTtl,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to acquire lock for key: ${cacheSettings.getKey()}`,
-        error,
-      );
       return null;
     }
   }
