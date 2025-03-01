@@ -1,13 +1,15 @@
 {
   "name": "johnycash",
-  "version": "1.0.56",
+  "version": "1.0.61",
   "scripts": {
     "test": "jest",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist",
+    "clean-build": "rm tsconfig.tsbuildinfo && npm run clean && npm run build",
     "clean-cache": "npm cache clean --force",
     "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "patch": "npm version patch",
     "publish": "npm publish --access public"
   },
   "author": "johnykes",
@@ -17,8 +19,8 @@
     "type": "git",
     "url": "git@github.com:johnykes/johny-cache.git"
   },
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "README.md",

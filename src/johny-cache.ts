@@ -184,14 +184,11 @@ export class JohnyCacheService {
   //   }
 
   async acquireLock(cacheSettings: LockCacheSettings): Promise<Lock | null> {
-    // Merge default lock options with any provided on a per-lock basis.
     const lockOptions = {
       ...this.defaultLockOptions,
       ...(cacheSettings.lockOptions || {}),
     };
 
-    // Decide which redlock instance to use.
-    // If the provided options differ from the default ones, create a temporary redlock instance.
     let redlockToUse: Redlock;
     if (
       lockOptions.retryCount === this.defaultLockOptions.retryCount &&
