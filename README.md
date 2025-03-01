@@ -55,8 +55,8 @@ import { JohnyCacheService, CacheSetting, Constants } from 'johnycash';
 const cacheSettings = new CacheSetting({
   prefix: "user",                       // unique prefix
   suffix: `${userIdOrEmail}`,           // unique suffix
-  remoteTtl: Constants.oneHour(),       // seconds (in local cache/memory)
-  localTtl: 10 * Constants.oneMinute(), // seconds (remote/Redis)
+  localTtl: Constants.oneHour(),       // seconds (in local cache/memory)
+  remoteTtl: 10 * Constants.oneMinute(), // seconds (remote/Redis)
 });
 ```
 
@@ -69,8 +69,8 @@ const userData = await this.db.getUserByUsername(username);
 const cacheSettings = new CacheSetting({
   prefix: "user",                       // unique prefix
   suffix: `${userData.id}`,             // unique suffix
-  remoteTtl: Constants.oneHour(),       // seconds (in local cache/memory)
-  localTtl: 10 * Constants.oneMinute(), // seconds (remote/Redis)
+  localTtl: Constants.oneHour(),       // seconds (in local cache/memory)
+  remoteTtl: 10 * Constants.oneMinute(), // seconds (remote/Redis)
 });
 
 await cacheService.set(cacheSettings, userData);
