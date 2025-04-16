@@ -188,3 +188,8 @@ export class CacheInfoValidationService {
   }
 }
 ```
+
+## TLS
+
+Works with both TLS/SSL and without.
+If you need TSL/SSL, just use rediss:// instead of redis://

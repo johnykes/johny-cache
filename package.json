@@ -1,6 +1,6 @@
 {
   "name": "johnycash",
-  "version": "1.0.69",
+  "version": "1.0.79",
   "scripts": {
     "test": "jest",
     "build": "tsc --project tsconfig.json",

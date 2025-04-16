@@ -7,7 +7,7 @@ import {
 import { Lock } from 'redlock';
 import { Constants } from '../src/constants';
 
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379/0';
+const redisUrl = 'redis://127.0.0.1:6379/0';
 
 describe('JohnyCacheService', () => {
   let johnyCacheService: JohnyCacheService;

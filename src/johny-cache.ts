@@ -70,7 +70,13 @@ export class JohnyCacheService {
     this.redisCache = new RedisCacheService(this.redis);
 
     // Initialize Redis Pub/Sub service with the same configuration.
-    this.redisPubSubServices = new RedisPubSubService(redisConfig);
+    const redisPublisher = new Redis(redisConfig);
+    const redisSubscriber = new Redis(redisConfig);
+    this.redisPubSubServices = new RedisPubSubService({
+      publisher: redisPublisher,
+      subscriber: redisSubscriber,
+    });
+    // this.redisPubSubServices = new RedisPubSubService(redisConnectionString);
 
     // Initialize the redlock instance using the Redis client.
     this.defaultRedlock = new Redlock([this.redis], this.defaultLockOptions);
