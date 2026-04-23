@@ -1,6 +1,6 @@
 {
   "name": "johnycash",
-  "version": "1.0.79",
+  "version": "1.0.80",
   "scripts": {
     "test": "jest",
     "build": "tsc --project tsconfig.json",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:johnykes/johny-cache.git"
+    "url": "git+ssh://git@github.com/johnykes/johny-cache.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
