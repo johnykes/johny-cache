@@ -158,6 +158,22 @@ export class JohnyCacheService {
     ]);
   }
 
+  async deleteByPattern(cacheSettings: CacheSetting): Promise<void> {
+    const pattern = cacheSettings.getKey();
+    const promises: Promise<any>[] = [];
+
+    if (cacheSettings.localTtl) {
+      this.memoryCache.deleteCacheKeysByPattern(pattern);
+      promises.push(this.sendDeleteRemoteKeysEvent([pattern]));
+    }
+
+    if (cacheSettings.remoteTtl) {
+      promises.push(this.redisCache.deleteByPattern(pattern));
+    }
+
+    await Promise.all(promises);
+  }
+
   async getOrSetCache<T>(
     cacheSettings: CacheSetting,
     promise: () => Promise<T>,
@@ -256,10 +272,11 @@ export class JohnyCacheService {
     }
     // this.logger.log('handleDeleteRemoteKeysEvent', keys);
     for (const key of event.keys) {
-      if (key.includes('*')) {
-        this.logger.warn('Pattern should not exist in local memory? "*"...');
+      if (key.includes('*') || key.includes('?')) {
+        this.memoryCache.deleteCacheKeysByPattern(key);
+      } else {
+        this.memoryCache.deleteCacheKey(key);
       }
-      await this.memoryCache.deleteCacheKey(key);
     }
   }
 
@@ -272,9 +289,9 @@ export class JohnyCacheService {
     // this.logger.log('handleRefreshRemoteKeysEvent', event);
 
     for (const key of event.keys) {
-      if (key.includes('*')) {
-        //
+      if (key.includes('*') || key.includes('?')) {
         this.logger.warn('Pattern should not exist in local memory? "*"...');
+        return;
       }
       promises.push(this.memoryCache.refreshCacheLocalTtl(key, event.ttl));
     }

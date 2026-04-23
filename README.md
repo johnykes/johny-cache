@@ -98,6 +98,27 @@ console.log(userData); // Value from cache or from the fallback function
 await cacheService.delete(cacheSettings);
 ```
 
+## Deleting by Pattern
+
+If you need to invalidate a whole group of keys at once (e.g. every cache entry for a given prefix), use `deleteByPattern`. It accepts a `CacheSetting` where the `suffix` (or any part of the key) can contain glob wildcards — `*` for zero-or-more characters, `?` for exactly one character — matching Redis `SCAN MATCH` semantics.
+
+```TS
+// Remove every "user_*" entry from both local memory and Redis,
+// and broadcast the invalidation to other instances via Pub/Sub.
+await cacheService.deleteByPattern(new CacheSetting({
+  prefix: 'user',
+  suffix: '*',
+  localTtl: Constants.oneHour(),         // include this to clear local memory
+  remoteTtl: 10 * Constants.oneMinute(), // include this to clear Redis
+}));
+```
+
+Flag gating works just like `set` / `delete`:
+- Omit `localTtl` → memory scan is skipped, and no Pub/Sub event is emitted.
+- Omit `remoteTtl` → Redis `SCAN` is skipped.
+
+Cross-instance invalidation works transparently — the pattern rides on the existing `CACHE_DELETE_NOTIFICATION_EVENT` channel, and subscribers evict matching local keys automatically.
+
 ## Distributed Locking
 
 ```TS

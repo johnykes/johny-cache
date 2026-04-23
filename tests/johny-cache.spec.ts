@@ -212,4 +212,137 @@ describe('JohnyCacheService', () => {
     let retrievd2 = await johnyCacheService.get(cacheSettings);
     expect(retrievd2).toEqual(newValue);
   });
+
+  describe('deleteByPattern', () => {
+    const bothTtl = (prefix: string, suffix: string) =>
+      new CacheSetting({
+        prefix,
+        suffix,
+        localTtl: 10 * Constants.oneSecond(),
+        remoteTtl: 10 * Constants.oneSecond(),
+        refreshTtl: false,
+      });
+
+    test('deletes matching keys in both layers, leaves non-matching intact', async () => {
+      await johnyCacheService.set(bothTtl('pat-a', 'u1'), 'v1');
+      await johnyCacheService.set(bothTtl('pat-a', 'u2'), 'v2');
+      await johnyCacheService.set(bothTtl('pat-b', 'x'), 'other');
+
+      await johnyCacheService.deleteByPattern(
+        new CacheSetting({
+          prefix: 'pat-a',
+          suffix: '*',
+          localTtl: 10 * Constants.oneSecond(),
+          remoteTtl: 10 * Constants.oneSecond(),
+        }),
+      );
+
+      expect(await johnyCacheService.get(bothTtl('pat-a', 'u1'))).toBeNull();
+      expect(await johnyCacheService.get(bothTtl('pat-a', 'u2'))).toBeNull();
+      expect(await johnyCacheService.get(bothTtl('pat-b', 'x'))).toEqual(
+        'other',
+      );
+    });
+
+    test('? wildcard matches exactly one character', async () => {
+      await johnyCacheService.set(bothTtl('pat-q', 'a'), '1');
+      await johnyCacheService.set(bothTtl('pat-q', 'ab'), '2');
+
+      await johnyCacheService.deleteByPattern(
+        new CacheSetting({
+          prefix: 'pat-q',
+          suffix: '?',
+          localTtl: 10 * Constants.oneSecond(),
+          remoteTtl: 10 * Constants.oneSecond(),
+        }),
+      );
+
+      expect(await johnyCacheService.get(bothTtl('pat-q', 'a'))).toBeNull();
+      expect(await johnyCacheService.get(bothTtl('pat-q', 'ab'))).toEqual('2');
+    });
+
+    test('only localTtl: clears memory but leaves redis intact', async () => {
+      await johnyCacheService.set(bothTtl('pat-local', 'k'), 'still-in-redis');
+
+      await johnyCacheService.deleteByPattern(
+        new CacheSetting({
+          prefix: 'pat-local',
+          suffix: '*',
+          localTtl: 10 * Constants.oneSecond(),
+        }),
+      );
+
+      // redis still has it — get() will miss memory and fall through to redis
+      expect(await johnyCacheService.get(bothTtl('pat-local', 'k'))).toEqual(
+        'still-in-redis',
+      );
+    });
+
+    test('only remoteTtl: clears redis but leaves memory intact', async () => {
+      await johnyCacheService.set(
+        bothTtl('pat-remote', 'k'),
+        'still-in-memory',
+      );
+
+      await johnyCacheService.deleteByPattern(
+        new CacheSetting({
+          prefix: 'pat-remote',
+          suffix: '*',
+          remoteTtl: 10 * Constants.oneSecond(),
+        }),
+      );
+
+      // memory still has it — get() hits memory first
+      expect(await johnyCacheService.get(bothTtl('pat-remote', 'k'))).toEqual(
+        'still-in-memory',
+      );
+      // verify redis side is actually cleared
+      const directRedis = await (
+        johnyCacheService as any
+      ).redisCache.get('pat-remote_k');
+      expect(directRedis).toBeUndefined();
+    });
+
+    test('no ttl flags: no-op (neither layer touched)', async () => {
+      await johnyCacheService.set(bothTtl('pat-noop', 'k'), 'survives');
+
+      await johnyCacheService.deleteByPattern(
+        new CacheSetting({ prefix: 'pat-noop', suffix: '*' }),
+      );
+
+      expect(await johnyCacheService.get(bothTtl('pat-noop', 'k'))).toEqual(
+        'survives',
+      );
+    });
+
+    test('handleDeleteRemoteKeysEvent applies pattern locally', async () => {
+      await johnyCacheService.set(bothTtl('pat-sub', 'a'), '1');
+      await johnyCacheService.set(bothTtl('pat-sub', 'b'), '2');
+      await johnyCacheService.set(bothTtl('pat-other', 'c'), '3');
+
+      // Simulate a pattern-delete event arriving from a different instance.
+      await johnyCacheService.handleDeleteRemoteKeysEvent({
+        keys: ['pat-sub_*'],
+        instanceId: 'other-instance',
+      });
+
+      // Directly probe local memory to confirm pattern eviction (bypassing redis).
+      const mem = (johnyCacheService as any).memoryCache;
+      expect(mem.getCacheValue('pat-sub_a')).toBeUndefined();
+      expect(mem.getCacheValue('pat-sub_b')).toBeUndefined();
+      expect(mem.getCacheValue('pat-other_c')).toEqual('3');
+    });
+
+    test('handleDeleteRemoteKeysEvent ignores events from self', async () => {
+      await johnyCacheService.set(bothTtl('pat-self', 'a'), 'keep');
+
+      await johnyCacheService.handleDeleteRemoteKeysEvent({
+        keys: ['pat-self_*'],
+        instanceId: (johnyCacheService as any).instanceId,
+      });
+
+      const mem = (johnyCacheService as any).memoryCache;
+      expect(mem.getCacheValue('pat-self_a')).toEqual('keep');
+    });
+  });
 });

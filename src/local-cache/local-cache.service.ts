@@ -35,6 +35,32 @@ export class LocalCacheService {
     delete LocalCacheService.dictionary[key];
   }
 
+  deleteCacheKeysByPattern(pattern: string) {
+    const regex = LocalCacheService.globToRegex(pattern);
+    const keys = Object.keys(LocalCacheService.dictionary);
+    for (let i = 0, len = keys.length; i < len; i++) {
+      if (regex.test(keys[i])) {
+        delete LocalCacheService.dictionary[keys[i]];
+      }
+    }
+  }
+
+  private static globToRegex(pattern: string): RegExp {
+    let out = '';
+    for (let i = 0, len = pattern.length; i < len; i++) {
+      const ch = pattern[i];
+      if (ch === '*') {
+        out += '.*';
+      } else if (ch === '?') {
+        out += '.';
+      } else {
+        // escape regex metacharacters
+        out += ch.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+      }
+    }
+    return new RegExp('^' + out + '$');
+  }
+
   refreshCacheLocalTtl(key: string, ttl: number) {
     const cacheValue = LocalCacheService.dictionary[key];
     if (!cacheValue) {
